@@ -140,7 +140,7 @@ export class AuthService {
     };
   }
 
-  private async authenticate(email: string, password: string) {
+  async authenticate(email: string, password: string) {
     const user = await this.userService.findUserByEmail(email, {
       id: true,
       email: true,

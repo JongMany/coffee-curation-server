@@ -1,5 +1,11 @@
 import { USER_SERVICE, UserMicroservice } from '@app/common';
-import { Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -7,6 +13,7 @@ import * as Joi from 'joi';
 import { join } from 'path';
 import { AuthGuard } from '../guard/auth.guard';
 import { RBACGuard } from '../guard/rbac.guard';
+import { BearerTokenMiddleware } from '../middleware/bearer-token.middleware';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -34,6 +41,10 @@ import { AuthModule } from './auth/auth.module';
       ],
       isGlobal: true,
     }),
+    CacheModule.register({
+      ttl: 3000, // 기본 ttl 설정
+      isGlobal: true,
+    }),
     AuthModule,
   ],
   providers: [
@@ -47,4 +58,20 @@ import { AuthModule } from './auth/auth.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(BearerTokenMiddleware)
+      .exclude(
+        {
+          path: '/auth/login',
+          method: RequestMethod.POST,
+        },
+        {
+          path: '/auth/register',
+          method: RequestMethod.POST,
+        },
+      )
+      .forRoutes('*');
+  }
+}

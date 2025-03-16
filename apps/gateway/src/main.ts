@@ -17,6 +17,6 @@ bootstrap()
   .then(() => {
     console.log(`gateway has a connection in ${process.env.HTTP_PORT}`);
   })
-  .catch(() => {
-    console.log('gateway has an error');
+  .catch((error) => {
+    console.log('gateway has an error', error);
   });
