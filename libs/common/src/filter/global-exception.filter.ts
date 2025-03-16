@@ -7,10 +7,9 @@ import {
 import { HttpAdapterHost } from '@nestjs/core';
 
 interface ICustomRpcException {
-  status: number;
-  message: string;
   code: number;
-  details: string;
+  details?: string; // { status: number; message: string; code: number };
+  response: { statusCode: number; message: string; code: number };
 }
 
 @Catch()
@@ -21,7 +20,9 @@ export class AllGlobalExceptionsFilter implements ExceptionFilter {
     const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
 
-    const rpcError = JSON.parse(exception.details);
+    const rpcError = exception.details
+      ? JSON.parse(exception.details)
+      : { ...exception.response, status: exception.response.statusCode };
 
     const httpStatus = rpcError.status
       ? rpcError.status

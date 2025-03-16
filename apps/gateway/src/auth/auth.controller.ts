@@ -1,3 +1,4 @@
+import { Public } from '@app/common';
 import {
   Body,
   Controller,
@@ -14,6 +15,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   async registerUser(
     @Authorization() token: string,
@@ -26,6 +28,7 @@ export class AuthController {
     return result;
   }
 
+  @Public()
   @Post('login')
   async loginUser(@Authorization() token: string) {
     if (token === null) {
