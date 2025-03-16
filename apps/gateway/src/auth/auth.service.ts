@@ -31,4 +31,12 @@ export class AuthService implements OnModuleInit {
       ),
     );
   }
+
+  login(token: string) {
+    return lastValueFrom(
+      this.authService.loginUser({
+        token,
+      }),
+    );
+  }
 }

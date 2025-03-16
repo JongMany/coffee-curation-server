@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Authorization } from './decorator/authorization.decorator';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -17,5 +17,14 @@ export class AuthController {
       ...registerUserDto,
     });
     return result;
+  }
+
+  @Post('login')
+  async loginUser(@Authorization() token: string) {
+    if (token === null) {
+      throw new UnauthorizedException('토큰을 입력해주세요');
+    }
+
+    return this.authService.login(token);
   }
 }

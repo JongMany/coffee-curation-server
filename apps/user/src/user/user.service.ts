@@ -4,8 +4,9 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
+import { FindOptionsSelect, Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { DeleteUserDto } from './dto/delete-user.dto';
 import { User } from './entity/user.entity';
 
 @Injectable()
@@ -43,12 +44,18 @@ export class UserService {
     });
   }
 
-  private async findUserByEmail(email: string) {
+  async findUserByEmail(
+    email: string,
+    selectOptions?: FindOptionsSelect<User>,
+  ) {
     const user = await this.userRepository.findOne({
       where: {
         email,
       },
+      select: selectOptions,
     });
     return user;
   }
+
+  async deleteUser(deleteUserDto: DeleteUserDto) {}
 }
