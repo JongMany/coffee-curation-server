@@ -30,7 +30,10 @@ export class AuthController implements UserMicroservice.AuthServiceController {
     return 'a' as any;
   }
 
-  async parseBearerToken(request: UserMicroservice.ParseBearerTokenRequest) {
-    return 'a' as any;
+  parseBearerToken(request: UserMicroservice.ParseBearerTokenRequest) {
+    return this.authService.parseBearerToken({
+      token: request.token,
+      isRefreshToken: false,
+    });
   }
 }
