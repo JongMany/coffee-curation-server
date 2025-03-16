@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 질문 & 기타 요청
+    url: https://github.com/coffee-curation/discussions
+    about: 일반적인 질문이나 논의는 Discussions를 이용해주세요.

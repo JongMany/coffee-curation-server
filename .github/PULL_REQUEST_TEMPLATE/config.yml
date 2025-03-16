@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "📌 기능 추가 PR"
+    url: "https://github.com/coffee-curation/compare/{branch}...{branch}?expand=1&template=feature.md"
+    about: "새로운 기능을 추가할 때 사용하는 PR 템플릿입니다."
+  - name: "🐞 버그 수정 PR"
+    url: "https://github.com/coffee-curation/compare/{branch}...{branch}?expand=1&template=bug_fix.md"
+    about: "버그를 수정할 때 사용하는 PR 템플릿입니다."
