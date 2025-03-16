@@ -1,14 +1,9 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-  VersionColumn,
-} from 'typeorm';
+import { BaseTable, Role } from '@app/common';
+import { Exclude } from 'class-transformer';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class User {
+export class User extends BaseTable {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -29,14 +24,15 @@ export class User {
   @Column({
     select: false,
   })
+  @Exclude({
+    toPlainOnly: true,
+  })
   password: string;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @VersionColumn()
-  version: number;
+  @Column({
+    type: 'enum',
+    enum: Role,
+    default: Role.user,
+  })
+  role: Role;
 }
