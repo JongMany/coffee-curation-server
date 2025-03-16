@@ -1,7 +1,6 @@
-import { UserMicroservice } from '@app/common';
+import { CustomRpcException, UserMicroservice } from '@app/common';
 import { Metadata, status } from '@grpc/grpc-js';
 import { Controller, InternalServerErrorException } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -12,7 +11,8 @@ export class AuthController implements UserMicroservice.AuthServiceController {
   async registerUser(request: UserMicroservice.RegisterUserRequest) {
     const { token } = request;
     if (token === null) {
-      throw new RpcException({
+      throw new CustomRpcException({
+        status: 400,
         code: status.UNAUTHENTICATED,
         message: '토큰을 입력해주세요',
       });
@@ -28,9 +28,9 @@ export class AuthController implements UserMicroservice.AuthServiceController {
 
   async loginUser(request: UserMicroservice.LoginUserRequest) {
     const { token } = request;
-    console.log('token', token);
     if (token === null) {
-      throw new RpcException({
+      throw new CustomRpcException({
+        status: 400,
         code: status.UNAUTHENTICATED,
         message: '토큰을 입력해주세요',
       });
@@ -50,6 +50,14 @@ export class AuthController implements UserMicroservice.AuthServiceController {
     request: UserMicroservice.DeleteUserRequest,
     metadata?: Metadata,
   ) {
+    const { token } = request;
+    if (token === null) {
+      throw new CustomRpcException({
+        status: 400,
+        code: status.UNAUTHENTICATED,
+        message: '토큰을 입력해주세요',
+      });
+    }
     return this.authService.deleteUser(request);
   }
 }

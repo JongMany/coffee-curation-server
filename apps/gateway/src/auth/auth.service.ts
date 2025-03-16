@@ -3,6 +3,7 @@ import { AUTH_MICROSERVICE } from '@app/common/constants/microservices';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { catchError, lastValueFrom } from 'rxjs';
+import { DeleteUserDto } from './dto/delete-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
@@ -38,5 +39,9 @@ export class AuthService implements OnModuleInit {
         token,
       }),
     );
+  }
+
+  deleteUser(deleteUserDto: { token: string } & DeleteUserDto) {
+    return lastValueFrom(this.authService.deleteUser(deleteUserDto));
   }
 }

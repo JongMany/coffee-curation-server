@@ -6,6 +6,7 @@ service AuthService {
     rpc ParseBearerToken(ParseBearerTokenRequest) returns (ParseBearerTokenResponse);
     rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
     rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
 }
 
 message ParseBearerTokenRequest{
@@ -38,6 +39,15 @@ message LoginUserRequest {
 message LoginUserResponse {
     string refreshToken = 1;
     string accessToken = 2;
+}
+
+message DeleteUserRequest {
+  string token = 1;
+  string email = 2;
+  string password = 3;
+}
+message DeleteUserResponse {
+  string message = 1;
 }
 
 service UserService {

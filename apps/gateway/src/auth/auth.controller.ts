@@ -1,6 +1,13 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Authorization } from './decorator/authorization.decorator';
+import { DeleteUserDto } from './dto/delete-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 
 @Controller('auth')
@@ -26,5 +33,17 @@ export class AuthController {
     }
 
     return this.authService.login(token);
+  }
+
+  @Delete('user')
+  async deleteUser(
+    @Authorization() token: string,
+    @Body() deleteUserDto: DeleteUserDto,
+  ) {
+    if (token === null) {
+      throw new UnauthorizedException('토큰을 입력해주세요');
+    }
+
+    return this.authService.deleteUser({ token, ...deleteUserDto });
   }
 }

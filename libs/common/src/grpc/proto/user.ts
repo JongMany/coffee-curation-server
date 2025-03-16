@@ -43,6 +43,16 @@ export interface LoginUserResponse {
   accessToken: string;
 }
 
+export interface DeleteUserRequest {
+  token: string;
+  email: string;
+  password: string;
+}
+
+export interface DeleteUserResponse {
+  message: string;
+}
+
 export interface GetUserInfoRequest {
   userId: string;
 }
@@ -63,6 +73,8 @@ export interface AuthServiceClient {
   registerUser(request: RegisterUserRequest, metadata?: Metadata): Observable<RegisterUserResponse>;
 
   loginUser(request: LoginUserRequest, metadata?: Metadata): Observable<LoginUserResponse>;
+
+  deleteUser(request: DeleteUserRequest, metadata?: Metadata): Observable<DeleteUserResponse>;
 }
 
 export interface AuthServiceController {
@@ -80,11 +92,16 @@ export interface AuthServiceController {
     request: LoginUserRequest,
     metadata?: Metadata,
   ): Promise<LoginUserResponse> | Observable<LoginUserResponse> | LoginUserResponse;
+
+  deleteUser(
+    request: DeleteUserRequest,
+    metadata?: Metadata,
+  ): Promise<DeleteUserResponse> | Observable<DeleteUserResponse> | DeleteUserResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["parseBearerToken", "registerUser", "loginUser"];
+    const grpcMethods: string[] = ["parseBearerToken", "registerUser", "loginUser", "deleteUser"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);

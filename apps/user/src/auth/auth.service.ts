@@ -156,7 +156,10 @@ export class AuthService {
     }
 
     // validate email
-    const isCorrectPassword = await bcrypt.compare(password, user.password);
+    const isCorrectPassword = await this.comparePassowrd(
+      password,
+      user.password,
+    );
     if (!isCorrectPassword) {
       throw new CustomRpcException({
         code: status.PERMISSION_DENIED, // gRPC의 400 Bad Request
@@ -165,6 +168,9 @@ export class AuthService {
       });
     }
     return user;
+  }
+  private async comparePassowrd(requestPassword: string, userPassword: string) {
+    return await bcrypt.compare(requestPassword, userPassword);
   }
 
   private async issueToken(options: { user: User; isRefreshToken: boolean }) {
@@ -196,6 +202,40 @@ export class AuthService {
       token: bearerToken,
       isRefreshToken: false,
     });
-    console.log(data);
+    const userId = data.sub;
+    const user = await this.userService.findUserById(userId, {
+      id: true,
+      email: true,
+      password: true,
+    });
+    if (!user) {
+      throw new CustomRpcException({
+        code: status.PERMISSION_DENIED, // gRPC의 400 Bad Request
+        message: '존재하지 않는 유저입니다.',
+        status: 404,
+      });
+    }
+    if (email !== user.email) {
+      throw new CustomRpcException({
+        code: status.PERMISSION_DENIED, // gRPC의 400 Bad Request
+        message: '올바른 이메일을 입력해주세요',
+        status: 404,
+      });
+    }
+    const isCorrectPassword = await this.comparePassowrd(
+      password,
+      user.password,
+    );
+    if (!isCorrectPassword) {
+      throw new CustomRpcException({
+        code: status.PERMISSION_DENIED, // gRPC의 400 Bad Request
+        message: '올바른 비밀번호를 입력해주세요',
+        status: 404,
+      });
+    }
+    return this.userService.deleteUser({
+      userId: user.id,
+      email: user.email,
+    });
   }
 }

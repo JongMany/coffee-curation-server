@@ -57,5 +57,30 @@ export class UserService {
     return user;
   }
 
-  async deleteUser(deleteUserDto: DeleteUserDto) {}
+  async findUserById(userId: string, selectOptions?: FindOptionsSelect<User>) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+      select: selectOptions,
+    });
+    return user;
+  }
+
+  async deleteUser(deleteUserDto: DeleteUserDto) {
+    const { userId, email } = deleteUserDto;
+    const result = await this.userRepository.delete({
+      id: userId,
+      email,
+    });
+    if (result.affected === 0) {
+      throw new CustomRpcException({
+        message: '삭제할 사용자가 존재하지 않습니다.',
+        code: status.NOT_FOUND,
+        status: 404,
+      });
+    }
+
+    return { message: '사용자가 성공적으로 삭제되었습니다.' };
+  }
 }
