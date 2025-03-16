@@ -1,0 +1,2 @@
+export const USER_SERVICE = 'USER_SERVICE';
+export const COFFEE_SERVICE = 'COFFEE_SERVICE';

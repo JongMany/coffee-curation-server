@@ -1,8 +1,41 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/coffee-curation-server/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/coffee-curation-server/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/coffee-curation-server",
+  "projects": {
+    "coffee-curation-server": {
+      "type": "application",
+      "root": "apps/coffee-curation-server",
+      "entryFile": "main",
+      "sourceRoot": "apps/coffee-curation-server/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/coffee-curation-server/tsconfig.app.json"
+      }
+    },
+    "gateway": {
+      "type": "application",
+      "root": "apps/gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/gateway/tsconfig.app.json"
+      }
+    },
+    "user": {
+      "type": "application",
+      "root": "apps/user",
+      "entryFile": "main",
+      "sourceRoot": "apps/user/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user/tsconfig.app.json"
+      }
+    }
   }
 }
