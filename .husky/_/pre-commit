@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+# . "$(dirname "$0")/h"
+#!/usr/bin/env sh
+# . "$(dirname -- "$0")/husky.sh"
+
+if pnpm exec validate-branch-name; then
+  echo "✅ 브랜치명 규칙이 올바르게 설정되었습니다"
+  exit 0
+else 
+  exit 1
+fi
+
+
+echo "🔍 commit 이전에 lint 규칙을 적용합니다..."
+if pnpm exec lint-staged; then
+  echo "✅ 모든 lint 규칙이 성공적으로 적용되었습니다."
+  exit 0
+else
+  echo "❌ lint 규칙 검사에서 오류가 발생했습니다."
+  exit 1
+fi
+
