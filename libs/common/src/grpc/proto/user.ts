@@ -53,6 +53,19 @@ export interface DeleteUserResponse {
   message: string;
 }
 
+/** 클라이언트가 카카오 인증 코드(code)를 제공 */
+export interface KakaoAuthRequest {
+  code: string;
+}
+
+/** 카카오에서 반환된 사용자 정보 */
+export interface KakaoAuthResponse {
+  uid: string;
+  email: string;
+  nickname: string;
+  profileImage: string;
+}
+
 export interface GetUserInfoRequest {
   userId: string;
 }
@@ -75,6 +88,8 @@ export interface AuthServiceClient {
   loginUser(request: LoginUserRequest, metadata?: Metadata): Observable<LoginUserResponse>;
 
   deleteUser(request: DeleteUserRequest, metadata?: Metadata): Observable<DeleteUserResponse>;
+
+  getKakaoUserInfo(request: KakaoAuthRequest, metadata?: Metadata): Observable<KakaoAuthResponse>;
 }
 
 export interface AuthServiceController {
@@ -97,11 +112,16 @@ export interface AuthServiceController {
     request: DeleteUserRequest,
     metadata?: Metadata,
   ): Promise<DeleteUserResponse> | Observable<DeleteUserResponse> | DeleteUserResponse;
+
+  getKakaoUserInfo(
+    request: KakaoAuthRequest,
+    metadata?: Metadata,
+  ): Promise<KakaoAuthResponse> | Observable<KakaoAuthResponse> | KakaoAuthResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["parseBearerToken", "registerUser", "loginUser", "deleteUser"];
+    const grpcMethods: string[] = ["parseBearerToken", "registerUser", "loginUser", "deleteUser", "getKakaoUserInfo"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);

@@ -60,4 +60,26 @@ export class AuthController implements UserMicroservice.AuthServiceController {
     }
     return this.authService.deleteUser(request);
   }
+
+  async getKakaoUserInfo(
+    request: UserMicroservice.KakaoAuthRequest,
+    metadata?: Metadata,
+  ) {
+    const { code } = request;
+
+    // 1. 카카오 유저 정보 받기
+    const { uid, email, nickname, profileImage } =
+      await this.authService.getKakakoUserInfo(code);
+    return {
+      uid,
+      email,
+      nickname,
+      profileImage,
+    };
+    // 2. 받은 유저 정보를 통해 서비스 로그인하기
+    // const result = await this.authService.login(uid);
+
+    // return result;
+    // return {};
+  }
 }

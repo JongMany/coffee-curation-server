@@ -3,6 +3,7 @@ import { status } from '@grpc/grpc-js';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import { User } from '../user/entity/user.entity';
 import { UserService } from '../user/user.service';
@@ -237,5 +238,40 @@ export class AuthService {
       userId: user.id,
       email: user.email,
     });
+  }
+
+  async getKakakoUserInfo(code: string) {
+    const formUrlEncoded = (x: Record<string, string>) =>
+      Object.keys(x).reduce(
+        (p, c) => p + `&${c}=${encodeURIComponent(x[c])}`,
+        '',
+      );
+
+    const GET_TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
+    const GET_USER_INFO_URL = 'https://kapi.kakao.com/v2/user/me';
+    const GRANT_TYPE = 'authorization_code';
+
+    const CLIENT_ID =
+      this.configService.getOrThrow<string>('KAKAO_REST_API_KEY');
+    const REDIRECT_URI =
+      this.configService.getOrThrow<string>('KAKAO_REDIRECT_URL');
+
+    const requestBody = formUrlEncoded({
+      grant_type: GRANT_TYPE,
+      client_id: CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      code,
+    });
+
+    // 1. 토큰 받기
+    const { data: tokenInfo } = await axios.post(GET_TOKEN_URL, requestBody);
+
+    const { data: userInfo } = await axios.get(GET_USER_INFO_URL, {
+      headers: {
+        Authorization: `Bearer ${tokenInfo.access}`,
+      },
+    });
+
+    return userInfo;
   }
 }
