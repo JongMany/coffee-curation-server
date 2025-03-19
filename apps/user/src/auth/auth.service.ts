@@ -13,6 +13,10 @@ import { UserService } from '../user/user.service';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import { ParseBearerTokenDto } from './dto/parse-bearer-token.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import {
+  KakaoAccount,
+  SignInKakaoUserInfoDto,
+} from './dto/signin-kakao-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -244,25 +248,19 @@ export class AuthService {
     });
   }
 
-  async signInWithKakao(kakaoAuthCode: string) {
+  async signInWithKakaoAuthCode(kakaoAuthCode: string) {
     // Authorization Code로 Kakao API에 Access Token 요청
     const accessToken = await this.getKakaoAccessToken(kakaoAuthCode);
 
     // Access Token으로 Kakao 사용자 정보 요청
     const kakaoUserInfo = await this.getKakaoUserInfo(accessToken);
-    console.log(accessToken, kakaoAuthCode, kakaoUserInfo);
 
     // 카카오 사용자 정보를 기반으로 회원가입 또는 로그인 처리
     const user = await this.signUpWithKakao(
       kakaoUserInfo.id.toString(),
-      kakaoUserInfo,
+      kakaoUserInfo.kakao_account,
     );
 
-    // [1] JWT 토큰 생성 (Secret + Payload)
-    // const jwtToken = await this.generateJwtToken(user);
-
-    // [2] 사용자 정보 반환
-    // return { jwtToken, user };
     return {
       refreshToken: await this.issueToken({
         user,
@@ -275,9 +273,29 @@ export class AuthService {
     };
   }
 
-  async signUpWithKakao(kakaoId: string, profile: any): Promise<User> {
-    const kakaoAccount = profile.kakao_account;
+  async signInWithKakaoUserInfo(kakaoUserInfo: SignInKakaoUserInfoDto) {
+    // 카카오 사용자 정보를 기반으로 회원가입 또는 로그인 처리
+    const user = await this.signUpWithKakao(
+      kakaoUserInfo.id.toString(),
+      kakaoUserInfo.kakaoAccount,
+    );
 
+    return {
+      refreshToken: await this.issueToken({
+        user,
+        isRefreshToken: true,
+      }),
+      accessToken: await this.issueToken({
+        user,
+        isRefreshToken: false,
+      }),
+    };
+  }
+
+  async signUpWithKakao(
+    kakaoId: string,
+    kakaoAccount: KakaoAccount,
+  ): Promise<User> {
     const kakaoUsername = kakaoAccount.profile.nickname;
     const kakaoEmail = kakaoAccount.email;
 

@@ -15,6 +15,7 @@ import { AuthService } from './auth.service';
 import { Authorization } from './decorator/authorization.decorator';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { SignInKakaoUserInfoDto } from './dto/signin-kakao-user-info.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -59,15 +60,29 @@ export class AuthController {
   @Public()
   @Get('/kakao')
   @UseGuards(AuthGuard('kakao'))
-  async kakaoLogin(@Req() request: Request) {
+  async redirecKakaoPage(@Req() request: Request) {
     // Passport의 AuthGuard에 의해 카카오 로그인 페이지로 리다이렉트
   }
 
   @Public()
   @Post('/register/kakao')
-  async kakaoCallback(@Query('code') kakaoAuthCode: string) {
-    const response = await this.authService.signInWithKakao(kakaoAuthCode);
-    console.log(response, kakaoAuthCode);
+  async registerWithKakao(@Query('code') kakaoAuthCode: string) {
+    const response =
+      await this.authService.signInWithKakaoAuthCode(kakaoAuthCode);
+
+    return {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    };
+  }
+
+  @Public()
+  @Post('/login/kakao')
+  async loginWithKakao(@Body() signInKakaoUserInfoDto: SignInKakaoUserInfoDto) {
+    const response = await this.authService.signInWithKakaoUserInfo(
+      signInKakaoUserInfoDto,
+    );
+
     return {
       accessToken: response.accessToken,
       refreshToken: response.refreshToken,

@@ -54,12 +54,12 @@ export interface DeleteUserResponse {
 }
 
 /** 클라이언트가 카카오 인증 코드(code)를 제공 */
-export interface SignInWithKakaoRequest {
+export interface SignInWithKakaoAuthCodeRequest {
   code: string;
 }
 
 /** 카카오에서 반환된 사용자 정보 */
-export interface SignInWithKakaoResponse {
+export interface SignInWithKakaoAuthCodeResponse {
   refreshToken: string;
   /**
    * string uid = 1;
@@ -67,6 +67,25 @@ export interface SignInWithKakaoResponse {
    *   string nickname = 3;
    *   string profile_image = 4;
    */
+  accessToken: string;
+}
+
+export interface SignInWithKakaoUserInfoRequest {
+  id: number;
+  kakaoAccount: SignInWithKakaoUserInfoRequest_KakaoAccount | undefined;
+}
+
+export interface SignInWithKakaoUserInfoRequest_Profile {
+  nickname: string;
+}
+
+export interface SignInWithKakaoUserInfoRequest_KakaoAccount {
+  profile: SignInWithKakaoUserInfoRequest_Profile | undefined;
+  email: string;
+}
+
+export interface SignInWithKakaoUserInfoResponse {
+  refreshToken: string;
   accessToken: string;
 }
 
@@ -93,7 +112,15 @@ export interface AuthServiceClient {
 
   deleteUser(request: DeleteUserRequest, metadata?: Metadata): Observable<DeleteUserResponse>;
 
-  signInWithKakao(request: SignInWithKakaoRequest, metadata?: Metadata): Observable<SignInWithKakaoResponse>;
+  signInWithKakaoAuthCode(
+    request: SignInWithKakaoAuthCodeRequest,
+    metadata?: Metadata,
+  ): Observable<SignInWithKakaoAuthCodeResponse>;
+
+  signInWithKakaoUserInfo(
+    request: SignInWithKakaoUserInfoRequest,
+    metadata?: Metadata,
+  ): Observable<SignInWithKakaoUserInfoResponse>;
 }
 
 export interface AuthServiceController {
@@ -117,15 +144,33 @@ export interface AuthServiceController {
     metadata?: Metadata,
   ): Promise<DeleteUserResponse> | Observable<DeleteUserResponse> | DeleteUserResponse;
 
-  signInWithKakao(
-    request: SignInWithKakaoRequest,
+  signInWithKakaoAuthCode(
+    request: SignInWithKakaoAuthCodeRequest,
     metadata?: Metadata,
-  ): Promise<SignInWithKakaoResponse> | Observable<SignInWithKakaoResponse> | SignInWithKakaoResponse;
+  ):
+    | Promise<SignInWithKakaoAuthCodeResponse>
+    | Observable<SignInWithKakaoAuthCodeResponse>
+    | SignInWithKakaoAuthCodeResponse;
+
+  signInWithKakaoUserInfo(
+    request: SignInWithKakaoUserInfoRequest,
+    metadata?: Metadata,
+  ):
+    | Promise<SignInWithKakaoUserInfoResponse>
+    | Observable<SignInWithKakaoUserInfoResponse>
+    | SignInWithKakaoUserInfoResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["parseBearerToken", "registerUser", "loginUser", "deleteUser", "signInWithKakao"];
+    const grpcMethods: string[] = [
+      "parseBearerToken",
+      "registerUser",
+      "loginUser",
+      "deleteUser",
+      "signInWithKakaoAuthCode",
+      "signInWithKakaoUserInfo",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);

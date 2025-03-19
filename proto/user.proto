@@ -7,7 +7,8 @@ service AuthService {
     rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
     rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
-    rpc SignInWithKakao (SignInWithKakaoRequest) returns (SignInWithKakaoResponse);
+    rpc SignInWithKakaoAuthCode (SignInWithKakaoAuthCodeRequest) returns (SignInWithKakaoAuthCodeResponse);
+    rpc SignInWithKakaoUserInfo (SignInWithKakaoUserInfoRequest) returns (SignInWithKakaoUserInfoResponse);
 }
 
 message ParseBearerTokenRequest{
@@ -52,18 +53,36 @@ message DeleteUserResponse {
 }
 
 // 클라이언트가 카카오 인증 코드(code)를 제공
-message SignInWithKakaoRequest {
+message SignInWithKakaoAuthCodeRequest {
   string code = 1;
 }
 
 // 카카오에서 반환된 사용자 정보
-message SignInWithKakaoResponse {
+message SignInWithKakaoAuthCodeResponse {
     string refreshToken = 1;
     string accessToken = 2;
 //   string uid = 1;
 //   string email = 2;
 //   string nickname = 3;
 //   string profile_image = 4;
+}
+
+message SignInWithKakaoUserInfoRequest {
+    message Profile {
+        string nickname = 1;        
+    }
+    message KakaoAccount {
+        Profile profile = 1;
+        string email = 2;
+    }
+    
+    int64 id = 1;
+    KakaoAccount kakao_account = 2;
+}
+
+message SignInWithKakaoUserInfoResponse {
+    string refreshToken = 1;
+    string accessToken = 2;
 }
 
 

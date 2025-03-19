@@ -5,6 +5,7 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { catchError, lastValueFrom } from 'rxjs';
 import { DeleteUserDto } from './dto/delete-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { SignInKakaoUserInfoDto } from './dto/signin-kakao-user-info.dto';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -45,9 +46,20 @@ export class AuthService implements OnModuleInit {
     return lastValueFrom(this.authService.deleteUser(deleteUserDto));
   }
 
-  async signInWithKakao(kakaoAuthCode: string) {
+  async signInWithKakaoAuthCode(kakaoAuthCode: string) {
     return lastValueFrom(
-      this.authService.signInWithKakao({ code: kakaoAuthCode }),
+      this.authService.signInWithKakaoAuthCode({ code: kakaoAuthCode }),
+    );
+  }
+
+  async signInWithKakaoUserInfo(
+    signInKakaoUserInfoDto: SignInKakaoUserInfoDto,
+  ) {
+    return lastValueFrom(
+      this.authService.signInWithKakaoUserInfo({
+        ...signInKakaoUserInfoDto,
+        kakaoAccount: signInKakaoUserInfoDto.kakao_account,
+      }),
     );
   }
 }

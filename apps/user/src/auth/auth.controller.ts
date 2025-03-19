@@ -2,6 +2,7 @@ import { CustomRpcException, UserMicroservice } from '@app/common';
 import { Metadata, status } from '@grpc/grpc-js';
 import { Controller, InternalServerErrorException } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { SignInKakaoUserInfoDto } from './dto/signin-kakao-user.dto';
 
 @Controller('auth')
 @UserMicroservice.AuthServiceControllerMethods()
@@ -61,13 +62,39 @@ export class AuthController implements UserMicroservice.AuthServiceController {
     return this.authService.deleteUser(request);
   }
 
-  async signInWithKakao(
-    request: UserMicroservice.SignInWithKakaoRequest,
+  async signInWithKakaoAuthCode(
+    request: UserMicroservice.SignInWithKakaoAuthCodeRequest,
     metadata?: Metadata,
   ) {
     const { code } = request;
     const { accessToken, refreshToken } =
-      await this.authService.signInWithKakao(code);
+      await this.authService.signInWithKakaoAuthCode(code);
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async signInWithKakaoUserInfo(
+    request: UserMicroservice.SignInWithKakaoUserInfoRequest,
+    metadata?: Metadata,
+  ) {
+    const { id, kakaoAccount } = request;
+
+    const validatedRequest: SignInKakaoUserInfoDto = {
+      id,
+      kakaoAccount: {
+        ...kakaoAccount,
+        email: kakaoAccount?.email ?? '',
+        profile: {
+          nickname: kakaoAccount?.profile?.nickname ?? '',
+        },
+      },
+    };
+
+    const { accessToken, refreshToken } =
+      await this.authService.signInWithKakaoUserInfo(validatedRequest);
+
     return {
       accessToken,
       refreshToken,
