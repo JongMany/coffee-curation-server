@@ -16,6 +16,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
   ) {}
+
   async createUser(createUserDto: CreateUserDto) {
     const { email, password, ...otherInformation } = createUserDto;
     const user = await this.findUserByEmail(email);

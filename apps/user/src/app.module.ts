@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
 import { AuthModule } from './auth/auth.module';
@@ -25,6 +26,7 @@ import { UserModule } from './user/user.module';
       }),
       inject: [ConfigService],
     }),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     UserModule,
     AuthModule,
   ],

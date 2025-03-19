@@ -3,9 +3,14 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Post,
+  Query,
+  Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { Authorization } from './decorator/authorization.decorator';
 import { DeleteUserDto } from './dto/delete-user.dto';
@@ -48,5 +53,24 @@ export class AuthController {
     }
 
     return this.authService.deleteUser({ token, ...deleteUserDto });
+  }
+
+  // https://www.citefred.com/nestjs/14
+  @Public()
+  @Get('/kakao')
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoLogin(@Req() request: Request) {
+    // Passport의 AuthGuard에 의해 카카오 로그인 페이지로 리다이렉트
+  }
+
+  @Public()
+  @Post('/register/kakao')
+  async kakaoCallback(@Query('code') kakaoAuthCode: string) {
+    const response = await this.authService.signInWithKakao(kakaoAuthCode);
+    console.log(response, kakaoAuthCode);
+    return {
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
+    };
   }
 }

@@ -3,8 +3,11 @@ import { status } from '@grpc/grpc-js';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+
+import { HttpService } from '@nestjs/axios';
 import * as bcrypt from 'bcrypt';
+import { firstValueFrom } from 'rxjs';
 import { User } from '../user/entity/user.entity';
 import { UserService } from '../user/user.service';
 import { DeleteUserDto } from './dto/delete-user.dto';
@@ -17,6 +20,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private httpService: HttpService,
   ) {}
 
   async registerUser(registerUserDto: RegisterUserDto) {
@@ -240,7 +244,77 @@ export class AuthService {
     });
   }
 
-  async getKakakoUserInfo(code: string) {
+  async signInWithKakao(kakaoAuthCode: string) {
+    // Authorization Code로 Kakao API에 Access Token 요청
+    const accessToken = await this.getKakaoAccessToken(kakaoAuthCode);
+
+    // Access Token으로 Kakao 사용자 정보 요청
+    const kakaoUserInfo = await this.getKakaoUserInfo(accessToken);
+    console.log(accessToken, kakaoAuthCode, kakaoUserInfo);
+
+    // 카카오 사용자 정보를 기반으로 회원가입 또는 로그인 처리
+    const user = await this.signUpWithKakao(
+      kakaoUserInfo.id.toString(),
+      kakaoUserInfo,
+    );
+
+    // [1] JWT 토큰 생성 (Secret + Payload)
+    // const jwtToken = await this.generateJwtToken(user);
+
+    // [2] 사용자 정보 반환
+    // return { jwtToken, user };
+    return {
+      refreshToken: await this.issueToken({
+        user,
+        isRefreshToken: true,
+      }),
+      accessToken: await this.issueToken({
+        user,
+        isRefreshToken: false,
+      }),
+    };
+  }
+
+  async signUpWithKakao(kakaoId: string, profile: any): Promise<User> {
+    const kakaoAccount = profile.kakao_account;
+
+    const kakaoUsername = kakaoAccount.profile.nickname;
+    const kakaoEmail = kakaoAccount.email;
+
+    // 카카오 프로필 데이터를 기반으로 사용자 찾기 또는 생성 로직을 구현
+    const existingUser = await this.userService.findUserByEmail(kakaoEmail);
+    if (existingUser) {
+      throw new CustomRpcException({
+        code: status.ALREADY_EXISTS,
+        message: '이미 존재하는 유저입니다.',
+        status: 404,
+      });
+    }
+
+    // 비밀번호 필드에 랜덤 문자열 생성
+    const temporaryPassword = uuidv4(); // 랜덤 문자열 생성
+    const hashedPassword = await this.hashPassword(temporaryPassword);
+
+    // 새 사용자 생성 로직
+    await this.userService.createUser({
+      name: kakaoUsername,
+      email: kakaoEmail,
+      password: hashedPassword, // 해싱된 임시 비밀번호 사용
+      profile: '',
+      age: 0,
+    });
+    const newUser = await this.userService.findUserByEmail(kakaoEmail);
+    if (!newUser) {
+      throw new CustomRpcException({
+        code: status.UNKNOWN,
+        status: 500,
+        message: '알 수 없는 에러가 발생했습니다.',
+      });
+    }
+    return newUser;
+  }
+
+  async getKakaoAccessToken(code: string) {
     const formUrlEncoded = (x: Record<string, string>) =>
       Object.keys(x).reduce(
         (p, c) => p + `&${c}=${encodeURIComponent(x[c])}`,
@@ -248,30 +322,45 @@ export class AuthService {
       );
 
     const GET_TOKEN_URL = 'https://kauth.kakao.com/oauth/token';
-    const GET_USER_INFO_URL = 'https://kapi.kakao.com/v2/user/me';
     const GRANT_TYPE = 'authorization_code';
 
     const CLIENT_ID =
       this.configService.getOrThrow<string>('KAKAO_REST_API_KEY');
     const REDIRECT_URI =
-      this.configService.getOrThrow<string>('KAKAO_REDIRECT_URL');
+      this.configService.getOrThrow<string>('KAKAO_REDIRECT_URI');
 
-    const requestBody = formUrlEncoded({
+    const payload = {
       grant_type: GRANT_TYPE,
       client_id: CLIENT_ID,
       redirect_uri: REDIRECT_URI,
       code,
-    });
+      // client_secret:
+    };
 
     // 1. 토큰 받기
-    const { data: tokenInfo } = await axios.post(GET_TOKEN_URL, requestBody);
+    const { data: tokenInfo } = await firstValueFrom(
+      this.httpService.post(GET_TOKEN_URL, null, {
+        params: payload,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }),
+    );
+    return tokenInfo.access_token;
+  }
 
-    const { data: userInfo } = await axios.get(GET_USER_INFO_URL, {
-      headers: {
-        Authorization: `Bearer ${tokenInfo.access}`,
-      },
-    });
+  async getKakaoUserInfo(accessToken: string) {
+    const GET_USER_INFO_URL = 'https://kapi.kakao.com/v2/user/me';
+    const { data: userInfo } = await firstValueFrom(
+      this.httpService.get(GET_USER_INFO_URL, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+    );
 
     return userInfo;
+  }
+
+  private async hashPassword(password: string) {
+    const round = this.configService.getOrThrow<number>('ROUND');
+    const hashedPassword = await bcrypt.hash(password, round);
+    return hashedPassword;
   }
 }

@@ -54,16 +54,20 @@ export interface DeleteUserResponse {
 }
 
 /** 클라이언트가 카카오 인증 코드(code)를 제공 */
-export interface KakaoAuthRequest {
+export interface SignInWithKakaoRequest {
   code: string;
 }
 
 /** 카카오에서 반환된 사용자 정보 */
-export interface KakaoAuthResponse {
-  uid: string;
-  email: string;
-  nickname: string;
-  profileImage: string;
+export interface SignInWithKakaoResponse {
+  refreshToken: string;
+  /**
+   * string uid = 1;
+   *   string email = 2;
+   *   string nickname = 3;
+   *   string profile_image = 4;
+   */
+  accessToken: string;
 }
 
 export interface GetUserInfoRequest {
@@ -89,7 +93,7 @@ export interface AuthServiceClient {
 
   deleteUser(request: DeleteUserRequest, metadata?: Metadata): Observable<DeleteUserResponse>;
 
-  getKakaoUserInfo(request: KakaoAuthRequest, metadata?: Metadata): Observable<KakaoAuthResponse>;
+  signInWithKakao(request: SignInWithKakaoRequest, metadata?: Metadata): Observable<SignInWithKakaoResponse>;
 }
 
 export interface AuthServiceController {
@@ -113,15 +117,15 @@ export interface AuthServiceController {
     metadata?: Metadata,
   ): Promise<DeleteUserResponse> | Observable<DeleteUserResponse> | DeleteUserResponse;
 
-  getKakaoUserInfo(
-    request: KakaoAuthRequest,
+  signInWithKakao(
+    request: SignInWithKakaoRequest,
     metadata?: Metadata,
-  ): Promise<KakaoAuthResponse> | Observable<KakaoAuthResponse> | KakaoAuthResponse;
+  ): Promise<SignInWithKakaoResponse> | Observable<SignInWithKakaoResponse> | SignInWithKakaoResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["parseBearerToken", "registerUser", "loginUser", "deleteUser", "getKakaoUserInfo"];
+    const grpcMethods: string[] = ["parseBearerToken", "registerUser", "loginUser", "deleteUser", "signInWithKakao"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);

@@ -33,7 +33,7 @@ export class AuthService implements OnModuleInit {
     );
   }
 
-  login(token: string) {
+  async login(token: string) {
     return lastValueFrom(
       this.authService.loginUser({
         token,
@@ -41,7 +41,13 @@ export class AuthService implements OnModuleInit {
     );
   }
 
-  deleteUser(deleteUserDto: { token: string } & DeleteUserDto) {
+  async deleteUser(deleteUserDto: { token: string } & DeleteUserDto) {
     return lastValueFrom(this.authService.deleteUser(deleteUserDto));
+  }
+
+  async signInWithKakao(kakaoAuthCode: string) {
+    return lastValueFrom(
+      this.authService.signInWithKakao({ code: kakaoAuthCode }),
+    );
   }
 }

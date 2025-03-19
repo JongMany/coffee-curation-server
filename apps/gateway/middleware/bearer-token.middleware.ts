@@ -21,7 +21,6 @@ export class BearerTokenMiddleware implements NestMiddleware {
   ) {}
   async use(req: any, res: any, next: NextFunction) {
     const authHeader = req.headers['authorization'];
-    console.log(authHeader);
 
     // 인증을 할 의도가 없는 경우
     if (!authHeader) {
