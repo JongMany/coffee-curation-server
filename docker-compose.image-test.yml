@@ -1,0 +1,35 @@
+# 실행: docker compose up
+version: '3.1'
+
+services:
+  gateway: # 서비스명
+    image: jongmany/fc-nestjs-gateway
+    env_file:
+      - ./apps/gateway/.env
+    ports:
+      - '3000:3000' # 3001: 내 PC의 포트 / 3000: 컨테이너 안의 포트 => Proxy
+
+  user: # 서비스명
+    image: jongmany/fc-nestjs-user
+    depends_on:
+      postgres_user: # 아래의 postgres_user 서비스에 의존
+        condition: service_healthy
+    env_file:
+      - ./apps/user/.env
+
+  postgres_user:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '6001:5432'
+    volumes:
+      - ./postgres/user:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
