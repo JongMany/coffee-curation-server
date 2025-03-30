@@ -22,6 +22,12 @@ import { AuthModule } from './auth/auth.module';
       isGlobal: true,
       validationSchema: Joi.object({
         HTTP_PORT: Joi.number().required(),
+        CLIENT_URL: Joi.string().required(),
+        USER_GRPC_URL: Joi.string().required(),
+        KAKAO_REST_API_KEY: Joi.string().required(),
+        KAKAO_REDIRECT_URI: Joi.string().required(),
+        REFRESH_TOKEN_SECRET: Joi.string().required(),
+        ACCESS_TOKEN_SECRET: Joi.string().required(),
       }),
     }),
     ClientsModule.registerAsync({
