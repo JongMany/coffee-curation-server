@@ -58,7 +58,7 @@ export class AuthController {
 
   // https://www.citefred.com/nestjs/14
   @Public()
-  @Get('/kakao')
+  @Get('kakao')
   @UseGuards(AuthGuard('kakao'))
   async redirecKakaoPage(@Req() request: Request) {
     // Passport의 AuthGuard에 의해 카카오 로그인 페이지로 리다이렉트
@@ -82,6 +82,7 @@ export class AuthController {
     const response = await this.authService.signInWithKakaoUserInfo(
       signInKakaoUserInfoDto,
     );
+    console.log(response);
 
     return {
       accessToken: response.accessToken,

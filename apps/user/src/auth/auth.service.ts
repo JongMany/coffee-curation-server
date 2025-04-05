@@ -275,10 +275,23 @@ export class AuthService {
 
   async signInWithKakaoUserInfo(kakaoUserInfo: SignInKakaoUserInfoDto) {
     // 카카오 사용자 정보를 기반으로 회원가입 또는 로그인 처리
-    const user = await this.signUpWithKakao(
-      kakaoUserInfo.id.toString(),
-      kakaoUserInfo.kakaoAccount,
-    );
+    const kakaoEmail = kakaoUserInfo.kakaoAccount.email;
+    const existingUser = await this.userService.findUserByEmail(kakaoEmail);
+    if (!existingUser) {
+      await this.signUpWithKakao(
+        kakaoUserInfo.id.toString(),
+        kakaoUserInfo.kakaoAccount,
+      );
+    }
+    const user = await this.userService.findUserByEmail(kakaoEmail);
+
+    if (!user) {
+      throw new CustomRpcException({
+        code: status.CANCELLED,
+        message: '회원가입에 실패했습니다.',
+        status: 404,
+      });
+    }
 
     return {
       refreshToken: await this.issueToken({
