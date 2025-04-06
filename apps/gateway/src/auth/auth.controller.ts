@@ -64,6 +64,17 @@ export class AuthController {
     // Passport의 AuthGuard에 의해 카카오 로그인 페이지로 리다이렉트
   }
 
+  // @Get('kakao/callback')
+  // async kakaoCallback(@Query('code') kakaoAuthCode: string) {
+  //   const response =
+  //     await this.authService.signInWithKakaoAuthCode(kakaoAuthCode);
+
+  //   return {
+  //     accessToken: response.accessToken,
+  //     refreshToken: response.refreshToken,
+  //   };
+  // }
+
   @Public()
   @Post('/register/kakao')
   async registerWithKakao(@Query('code') kakaoAuthCode: string) {

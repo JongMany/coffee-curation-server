@@ -315,11 +315,7 @@ export class AuthService {
     // 카카오 프로필 데이터를 기반으로 사용자 찾기 또는 생성 로직을 구현
     const existingUser = await this.userService.findUserByEmail(kakaoEmail);
     if (existingUser) {
-      throw new CustomRpcException({
-        code: status.ALREADY_EXISTS,
-        message: '이미 존재하는 유저입니다.',
-        status: 404,
-      });
+      return existingUser;
     }
 
     // 비밀번호 필드에 랜덤 문자열 생성
